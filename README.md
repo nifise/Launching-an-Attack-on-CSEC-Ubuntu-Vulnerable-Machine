@@ -82,12 +82,16 @@ Since there's no direct exploit to the ssh version 7.2p2, the typical approach f
 Using the searchsploit command, I searched for exploits to target this version of SSH.
 <pre>searchsploit openssh 7.2p2</pre>
 <b>Username enumeration</b> is the chosen exploit as it is the only vulnerability matched with the SSH version.
-
+<img></img>
+Using the searchsploit command, I searched for exploits to target this version of SSH.
+Username enumeration is the chosen exploit as it is the only vulnerability matched with the SSH version.
 <pre>
   search ssh Username Enumeration
   use auxiliary/scanner/ssh/ssh_enumusers
 </pre>
-
+Then to use the required module;
+<pre>use auxiliary/scanner/ssh/ssh_enumusers</pre>
+<img></img>
 
 
 
