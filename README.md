@@ -1,4 +1,4 @@
-# Launching-an-Attack-on-CSEC-Ubuntu-Vulnerable-Machine
+# Exploitation-and-Privilege-Escalation-on-Ubuntu-Vulnerable-Machine
 ### The purpose of this security assessment was to simulate how attackers can gain access to outdated or misconfigured systems and demonstrate the potential risks associated with vulnerable services.
 
 This attack was performed within a virtual environment, where only the machines assigned within the CSEC Ubuntu vulnerable lab were targeted.
@@ -50,7 +50,7 @@ This attack was performed within a virtual environment, where only the machines 
   </tr>
 </table>
 
-### Reconnaissance 
+<h1>Reconnaissance</h1> 
 <pre>sudo arp-scan -l</pre>
 I launched an arp sweep to gather a list of IP addresses in my LAN. 192.168.1.150 is the IP address of the victim machine. I used arp-scan because it was faster than netdiscover and i already knew the mac address of the csec machine.
 
@@ -64,16 +64,7 @@ The screenshot below shows the three open ports and their version as requested i
 The chosen port will be port 22 with SSH. The OpenSSH version 7.2p2 is an outdated version with several known exploits. One notable vulnerability is CVE-2016-6210, which allows for username enumeration via timing attacks on the SSH daemon. 
 <img></img>
 
-#### Fun Fact
-Here is a method to find the version of SSH port using metsploit. The result is the same as shown on the nmap scan result.
-<pre>
-<!-- Run this line by line -->
-use auxiliary/scanner/ssh/ssh_version 
-setg RHOSTS 192.168.1.150
-run
-</pre>
-
-### Initial Access
+<h1>Initial Access</h1>
 Since there's no direct exploit to the ssh version 7.2p2, the typical approach for SSH is:
 - Find valid usernames 
 - Brute force passwords
@@ -92,9 +83,45 @@ Username enumeration is the chosen exploit as it is the only vulnerability match
 Then to use the required module;
 <pre>use auxiliary/scanner/ssh/ssh_enumusers</pre>
 <img></img>
+The set RHOSTS is to the victim IP address.
+<img></img>
+The Username Enumeration module failed, even with using my own username word list which included the target’s username.
+Username enumeration was the right choice, but exploits don't always work perfectly in real-world conditions. Moving to brute forcing is the next step. 
+<pre>use auxiliary/scanner/ssh/ssh_login</pre>
+This is the bruteforce module path used which attempts SSH login using a username/password list. If successful, it provides the password and creates a session between the victim and attacker machine.
+<img></img>
+<pre>set PASS_FILE /usr/share/wordlists/rockyou.txt</pre>
+`/usr/share/wordlists/rockyou.txt` is the directory path to a password list, you can make your custom list for a faster bruteforce.
 
+<pre>set user_as_pass true</pre>
+This command tells metasploit to use the username also as the password, which is a common pattern and should be turned on by default but isn’t.
+`run` the command module.
 
+Metasploit successfully discovered valid login credentials for the SSH service: 
+<b>Username: marlinspike</b>
+<b>Password: marlinspike</b>
+After the brute forcing was successful, a manual ssh login was done to gain remote access to the victim machine
+<pre>ssh username@VICTIM_IP</pre>
+<img></img>
+For verification; `whoami`
 
+#### Fun Fact
+Here is a method to find the version of SSH port using metsploit. The result is the same as shown on the nmap scan result.
+<pre>
+<!-- Run this line by line -->
+use auxiliary/scanner/ssh/ssh_version 
+setg RHOSTS 192.168.1.150
+run
+</pre>
+
+<h1>Privilege Escalation</h1>
+To escalate my privilege I will be using
+<pre>sudo -i</pre>
+Alternatively, `sudo su` can be used as well.
+
+<img></img>
+
+I have successfully gained unauthoriazed access to another device through SSH. Note: SSH is only applicable for linux machines. For windows, RDP is the alternative. 
 
 
 
